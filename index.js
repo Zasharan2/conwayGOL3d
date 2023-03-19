@@ -486,6 +486,12 @@ function main() {
                             break;
                         }
                         case "B3/S": {
+                            ruleSet = "B4/S4";
+                            ruleSetValues = [[4], [4]];
+                            ruleSetButton.w = 110;
+                            break;
+                        }
+                        case "B4/S4": {
                             ruleSet = "B(10)/S9(10)(11)";
                             ruleSetValues = [[10], [9, 10, 11]];
                             ruleSetButton.w = 250;
