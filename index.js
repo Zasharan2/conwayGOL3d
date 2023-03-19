@@ -5,7 +5,7 @@ var keys = [];
 
 document.addEventListener("keydown", function (event) {
     keys[event.key] = true;
-    if (["ArrowUp", "ArrowDown"].indexOf(event.key) > -1) {
+    if (["ArrowUp", "ArrowDown", " "].indexOf(event.key) > -1) {
         event.preventDefault();
     }
 });
@@ -118,6 +118,10 @@ var dimensionCount = 2;
 var dimensionCountButton;
 var maxDimensions = 3;
 var zPosition = 0;
+
+var ruleSetButton;
+var ruleSet;
+var ruleSetValues = [[3], [2, 3]];
 
 var backButton;
 
@@ -259,13 +263,13 @@ function main() {
                             }
             
                             if (tiles[i][j].value == 0) {
-                                if (newTileSum == 3) {
+                                if (ruleSetValues[0].includes(newTileSum)) {
                                     newTiles[i][j].value = 1;
                                 } else {
                                     newTiles[i][j].value = 0;
                                 }
                             } else if (tiles[i][j].value == 1) {
-                                if (newTileSum == 2 || newTileSum == 3) {
+                                if (ruleSetValues[1].includes(newTileSum)) {
                                     newTiles[i][j].value = 1;
                                 } else {
                                     newTiles[i][j].value = 0;
@@ -357,13 +361,13 @@ function main() {
                                 }
                 
                                 if (tiles[i][j][k].value == 0) {
-                                    if (newTileSum == 10) {
+                                    if (ruleSetValues[0].includes(newTileSum)) {
                                         newTiles[i][j][k].value = 1;
                                     } else {
                                         newTiles[i][j][k].value = 0;
                                     }
                                 } else if (tiles[i][j][k].value == 1) {
-                                    if (newTileSum == 9 || newTileSum == 10 || newTileSum == 11) {
+                                    if (ruleSetValues[1].includes(newTileSum)) {
                                         newTiles[i][j][k].value = 1;
                                     } else {
                                         newTiles[i][j][k].value = 0;
@@ -386,8 +390,13 @@ function main() {
             break;
         }
         case SCREEN.TITLE_TO_SETTINGS: {
+            ruleSet = "B3/S23";
+            ruleSetValues = [[3], [2, 3]];
+
             dimensionCountButton = new Button(20, 25, 60, 50, 30, 60, 30, "2D", "#660066", "#bb00bb", "#ffffff", "#ffffff", "#ffffff", "#ffffff");
+            ruleSetButton = new Button(20, 100, 130, 50, 30, 135, 30, ruleSet, "#660066", "#bb00bb", "#ffffff", "#ffffff", "#ffffff", "#ffffff");
             backButton = new Button(400, 430, 90, 50, 410, 465, 30, "Back", "#660066", "#bb00bb", "#ffffff", "#ffffff", "#ffffff", "#ffffff");
+
             gameScreen = SCREEN.SETTINGS;
             break;
         }
@@ -411,6 +420,83 @@ function main() {
                 if (dimensionCount > maxDimensions) {
                     dimensionCount = 2;
                 }
+
+                switch (dimensionCount) {
+                    case 2: {
+                        ruleSet = "B3/S23";
+                        ruleSetValues = [[3], [2, 3]];
+                        ruleSetButton.w = 130;
+                        break;
+                    }
+                    case 3: {
+                        ruleSet = "B(10)/S9(10)(11)";
+                        ruleSetValues = [[10], [9, 10, 11]];
+                        ruleSetButton.w = 250;
+                        break;
+                    }
+                    default: {
+                        break;
+                    }
+                }
+                ruleSetButton.text = ruleSet;
+            }
+
+            ruleSetButton.hover();
+            ruleSetButton.render();
+
+            if (ruleSetButton.clicked && buttonTimer > clickDelay) {
+                buttonTimer = 0;
+
+                if (dimensionCount == 2) {
+                    switch (ruleSet) {
+                        case "B3/S23": {
+                            ruleSet = "B3/S012345678";
+                            ruleSetValues = [[3], [0, 1, 2, 3, 4, 5, 6, 7, 8]];
+                            ruleSetButton.w = 250;
+                            break;
+                        }
+                        case "B3/S012345678": {
+                            ruleSet = "B2/S";
+                            ruleSetValues = [[2], []];
+                            ruleSetButton.w = 95;
+                            break;
+                        }
+                        case "B2/S": {
+                            ruleSet = "B3/S23";
+                            ruleSetValues = [[3], [2, 3]];
+                            ruleSetButton.w = 130;
+                            break;
+                        }
+                        default: {
+                            break;
+                        }
+                    }
+                } else if (dimensionCount == 3) {
+                    switch (ruleSet) {
+                        case "B(10)/S9(10)(11)": {
+                            ruleSet = "B3/S23";
+                            ruleSetValues = [[3], [2, 3]];
+                            ruleSetButton.w = 130;
+                            break;
+                        }
+                        case "B3/S23": {
+                            ruleSet = "B3/S";
+                            ruleSetValues = [[3], []];
+                            ruleSetButton.w = 95;
+                            break;
+                        }
+                        case "B3/S": {
+                            ruleSet = "B(10)/S9(10)(11)";
+                            ruleSetValues = [[10], [9, 10, 11]];
+                            ruleSetButton.w = 250;
+                            break;
+                        }
+                        default: {
+                            break;
+                        }
+                    }
+                }
+                ruleSetButton.text = ruleSet;
             }
 
             backButton.hover();
