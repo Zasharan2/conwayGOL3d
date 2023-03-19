@@ -38,8 +38,11 @@ window.addEventListener("mouseup", function(event) {
 
 const SCREEN = {
     TITLE: 1,
-    TITLE_TO_GAME: 1.1,
-    GAME: 2
+    TITLE_TO_GAME: 1.2,
+    TITLE_TO_SETTINGS: 1.3,
+    GAME: 2,
+    SETTINGS: 3,
+    SETTINGS_TO_TITLE: 3.1
 }
 
 var gameScreen =  SCREEN.TITLE;
@@ -107,6 +110,16 @@ class Button {
 }
 
 var playButton = new Button(200, 200, 80, 50, 210, 235, 30, "Play", "#660066", "#bb00bb", "#ffffff", "#ffffff", "#ffffff", "#ffffff");
+var settingsButton = new Button(175, 275, 130, 50, 180, 310, 30, "Settings", "#660066", "#bb00bb", "#ffffff", "#ffffff", "#ffffff", "#ffffff");
+
+var buttonTimer = 0;
+
+var dimensionCount = 2;
+var dimensionCountButton;
+var maxDimensions = 3;
+var zPosition = 0;
+
+var backButton;
 
 class Tile {
     constructor(value, timer) {
@@ -118,8 +131,8 @@ class Tile {
 var spaceTimer = 0;
 var clickDelay = 20;
 
-var tiles = Array(20).fill().map(() => Array(20).fill(0));
-var newTiles = Array(20).fill().map(() => Array(20).fill(0));
+var tiles;
+var newTiles;
 
 var newTileSum = 0;
 
@@ -152,15 +165,38 @@ function main() {
                 gameScreen = SCREEN.TITLE_TO_GAME;
             }
 
+            // settings button
+            settingsButton.hover();
+            settingsButton.render();
+
+            if (settingsButton.clicked) {
+                gameScreen = SCREEN.TITLE_TO_SETTINGS;
+            }
+
             break;
         }
         case SCREEN.TITLE_TO_GAME: {
             gameScreen = SCREEN.GAME;
 
-            for (var i = 0; i < tiles.length; i++) {
-                for (var j = 0; j < tiles.length; j++) {
-                    tiles[i][j] = new Tile(0, 0);
-                    newTiles[i][j] = new Tile(0, 0);
+            if (dimensionCount == 2) {
+                tiles = Array(20).fill().map(() => Array(20).fill(0));
+                newTiles = Array(20).fill().map(() => Array(20).fill(0));
+                for (var i = 0; i < tiles.length; i++) {
+                    for (var j = 0; j < tiles.length; j++) {
+                        tiles[i][j] = new Tile(0, 0);
+                        newTiles[i][j] = new Tile(0, 0);
+                    }
+                }
+            } else if (dimensionCount == 3) {
+                tiles = Array(20).fill().map(() => Array(20).fill().map(() => Array(20).fill(0)));
+                newTiles = Array(20).fill().map(() => Array(20).fill().map(() => Array(20).fill(0)));
+                for (var i = 0; i < tiles.length; i++) {
+                    for (var j = 0; j < tiles.length; j++) {
+                        for (var k = 0; k < tiles.length; k++) {
+                            tiles[i][j][k] = new Tile(0, 0);
+                            newTiles[i][j][k] = new Tile(0, 0);
+                        }
+                    }
                 }
             }
 
@@ -174,76 +210,220 @@ function main() {
             ctx.fillStyle = "#880088";
             ctx.fillRect(0, 0, 512, 512);
 
-            for (var i = 0; i < tiles.length; i++) {
-                for (var j = 0; j < tiles.length; j++) {
-                    tiles[i][j].timer++;
-
-                    ctx.beginPath();
-                    if (tiles[i][j].value == 0) {
-                        if (mouseX > 8.5 + 25*i && mouseX < 28.5 + 25*i && mouseY > 8.5 + 25*j && mouseY < 28.5 + 25*j) {
-                            ctx.fillStyle = "#660066";
-                            if (mouseDown && mouseButton == 1 && tiles[i][j].timer > clickDelay) {
-                                tiles[i][j].value = (tiles[i][j].value + 1) % 2;
-                                tiles[i][j].timer = 0;
-                            }
-                        } else {
-                            ctx.fillStyle = "#440044";
-                        }
-                    } else if (tiles[i][j].value == 1) {
-                        if (mouseX > 8.5 + 25*i && mouseX < 28.5 + 25*i && mouseY > 8.5 + 25*j && mouseY < 28.5 + 25*j) {
-                            ctx.fillStyle = "#dd00dd";
-                            if (mouseDown && mouseButton == 2 && tiles[i][j].timer > clickDelay) {
-                                tiles[i][j].value = (tiles[i][j].value + 1) % 2;
-                                tiles[i][j].timer = 0;
-                            }
-                        } else {
-                            ctx.fillStyle = "#ff00ff";
-                        }
-                    }
-                    ctx.fillRect(8.5 + 25*i, 8.5 + 25*j, 20, 20);
-                }
-            }
-
-            if (keys[" "] && spaceTimer > clickDelay) {
-                spaceTimer = 0;
-
+            if (dimensionCount == 2) {
                 for (var i = 0; i < tiles.length; i++) {
                     for (var j = 0; j < tiles.length; j++) {
-                        newTileSum = 0;
+                        tiles[i][j].timer++;
+    
+                        ctx.beginPath();
+                        if (tiles[i][j].value == 0) {
+                            if (mouseX > 8.5 + 25*i && mouseX < 28.5 + 25*i && mouseY > 8.5 + 25*j && mouseY < 28.5 + 25*j) {
+                                ctx.fillStyle = "#660066";
+                                if (mouseDown && mouseButton == 1 && tiles[i][j].timer > clickDelay) {
+                                    tiles[i][j].value = (tiles[i][j].value + 1) % 2;
+                                    tiles[i][j].timer = 0;
+                                }
+                            } else {
+                                ctx.fillStyle = "#440044";
+                            }
+                        } else if (tiles[i][j].value == 1) {
+                            if (mouseX > 8.5 + 25*i && mouseX < 28.5 + 25*i && mouseY > 8.5 + 25*j && mouseY < 28.5 + 25*j) {
+                                ctx.fillStyle = "#dd00dd";
+                                if (mouseDown && mouseButton == 2 && tiles[i][j].timer > clickDelay) {
+                                    tiles[i][j].value = (tiles[i][j].value + 1) % 2;
+                                    tiles[i][j].timer = 0;
+                                }
+                            } else {
+                                ctx.fillStyle = "#ff00ff";
+                            }
+                        }
+                        ctx.fillRect(8.5 + 25*i, 8.5 + 25*j, 20, 20);
+                    }
+                }
+    
+                if (keys[" "] && spaceTimer > clickDelay) {
+                    spaceTimer = 0;
+    
+                    for (var i = 0; i < tiles.length; i++) {
+                        for (var j = 0; j < tiles.length; j++) {
+                            newTileSum = 0;
+    
+                            for (var p = i - 1; p <= i + 1; p++) {
+                                for (var q = j - 1; q <= j + 1; q++) {
+                                    if (p > -1 && q > -1 && p < tiles.length && q < tiles.length) {
+                                        if (!(p == i && q == j)) {
+                                            newTileSum += tiles[p][q].value;
+                                        }
+                                    }
+                                }
+                            }
+            
+                            if (tiles[i][j].value == 0) {
+                                if (newTileSum == 3) {
+                                    newTiles[i][j].value = 1;
+                                } else {
+                                    newTiles[i][j].value = 0;
+                                }
+                            } else if (tiles[i][j].value == 1) {
+                                if (newTileSum == 2 || newTileSum == 3) {
+                                    newTiles[i][j].value = 1;
+                                } else {
+                                    newTiles[i][j].value = 0;
+                                }
+                            }
+                        }
+                    }
+    
+                    for (var i = 0; i < tiles.length; i++) {
+                        for (var j = 0; j < tiles.length; j++) {
+                            tiles[i][j].value = newTiles[i][j].value;
+                        }
+                    }
+                }
+            } else if (dimensionCount == 3) {
+                for (var i = 0; i < tiles.length; i++) {
+                    for (var j = 0; j < tiles.length; j++) {
+                        tiles[i][j][zPosition].timer++;
+    
+                        ctx.beginPath();
+                        if (tiles[i][j][zPosition].value == 0) {
+                            if (mouseX > 8.5 + 25*i && mouseX < 28.5 + 25*i && mouseY > 8.5 + 25*j && mouseY < 28.5 + 25*j) {
+                                ctx.fillStyle = "#660066";
+                                if (mouseDown && mouseButton == 1 && tiles[i][j][zPosition].timer > clickDelay) {
+                                    tiles[i][j][zPosition].value = (tiles[i][j][zPosition].value + 1) % 2;
+                                    tiles[i][j][zPosition].timer = 0;
+                                }
+                            } else {
+                                ctx.fillStyle = "#440044";
+                            }
+                        } else if (tiles[i][j][zPosition].value == 1) {
+                            if (mouseX > 8.5 + 25*i && mouseX < 28.5 + 25*i && mouseY > 8.5 + 25*j && mouseY < 28.5 + 25*j) {
+                                ctx.fillStyle = "#dd00dd";
+                                if (mouseDown && mouseButton == 2 && tiles[i][j][zPosition].timer > clickDelay) {
+                                    tiles[i][j][zPosition].value = (tiles[i][j][zPosition].value + 1) % 2;
+                                    tiles[i][j][zPosition].timer = 0;
+                                }
+                            } else {
+                                ctx.fillStyle = "#ff00ff";
+                            }
+                        }
+                        ctx.fillRect(8.5 + 25*i, 8.5 + 25*j, 20, 20);
+                    }
+                }
 
-                        for (var p = i - 1; p <= i + 1; p++) {
-                            for (var q = j - 1; q <= j + 1; q++) {
-                                if (p > -1 && q > -1 && p < tiles.length && q < tiles.length) {
-                                    if (!(p == i && q == j)) {
-                                        newTileSum += tiles[p][q].value;
+                // dimension marker
+                ctx.beginPath();
+                ctx.fillStyle = "#ff00ff";
+                ctx.fillRect(0, 16 + 25*((tiles.length - 1) - zPosition), 8, 5);
+                ctx.fillRect(504, 16 + 25*((tiles.length - 1) - zPosition), 8, 5);
+
+                if ((keys["ArrowUp"] || keys["w"]) && spaceTimer > clickDelay) {
+                    spaceTimer = 0;
+
+                    zPosition++;
+
+                    if (zPosition >= tiles.length) {
+                        zPosition = 0;
+                    }
+                }
+                if ((keys["ArrowDown"] || keys["s"]) && spaceTimer > clickDelay) {
+                    spaceTimer = 0;
+
+                    zPosition--;
+
+                    if (zPosition < 0) {
+                        zPosition = tiles.length - 1;
+                    }
+                }
+    
+                if (keys[" "] && spaceTimer > clickDelay) {
+                    spaceTimer = 0;
+    
+                    for (var i = 0; i < tiles.length; i++) {
+                        for (var j = 0; j < tiles.length; j++) {
+                            for (var k = 0; k < tiles.length; k++) {
+                                newTileSum = 0;
+    
+                                for (var p = i - 1; p <= i + 1; p++) {
+                                    for (var q = j - 1; q <= j + 1; q++) {
+                                        for (var r = k - 1; r <= k + 1; r++) {
+                                            if (p > -1 && q > -1 && r > -1 && p < tiles.length && q < tiles.length && r < tiles.length) {
+                                                if (!(p == i && q == j && r == k)) {
+                                                    newTileSum += tiles[p][q][r].value;
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                
+                                if (tiles[i][j][k].value == 0) {
+                                    if (newTileSum == 10) {
+                                        newTiles[i][j][k].value = 1;
+                                    } else {
+                                        newTiles[i][j][k].value = 0;
+                                    }
+                                } else if (tiles[i][j][k].value == 1) {
+                                    if (newTileSum == 9 || newTileSum == 10 || newTileSum == 11) {
+                                        newTiles[i][j][k].value = 1;
+                                    } else {
+                                        newTiles[i][j][k].value = 0;
                                     }
                                 }
                             }
                         }
-        
-                        if (tiles[i][j].value == 0) {
-                            if (newTileSum == 3) {
-                                newTiles[i][j].value = 1;
-                            } else {
-                                newTiles[i][j].value = 0;
-                            }
-                        } else if (tiles[i][j].value == 1) {
-                            if (newTileSum == 2 || newTileSum == 3) {
-                                newTiles[i][j].value = 1;
-                            } else {
-                                newTiles[i][j].value = 0;
+                    }
+    
+                    for (var i = 0; i < tiles.length; i++) {
+                        for (var j = 0; j < tiles.length; j++) {
+                            for (var k = 0; k < tiles.length; k++) {
+                                tiles[i][j][k].value = newTiles[i][j][k].value;
                             }
                         }
                     }
                 }
+            }
 
-                for (var i = 0; i < tiles.length; i++) {
-                    for (var j = 0; j < tiles.length; j++) {
-                        tiles[i][j].value = newTiles[i][j].value;
-                    }
+            break;
+        }
+        case SCREEN.TITLE_TO_SETTINGS: {
+            dimensionCountButton = new Button(20, 25, 60, 50, 30, 60, 30, "2D", "#660066", "#bb00bb", "#ffffff", "#ffffff", "#ffffff", "#ffffff");
+            backButton = new Button(400, 430, 90, 50, 410, 465, 30, "Back", "#660066", "#bb00bb", "#ffffff", "#ffffff", "#ffffff", "#ffffff");
+            gameScreen = SCREEN.SETTINGS;
+            break;
+        }
+        case SCREEN.SETTINGS: {
+            buttonTimer++;
+
+            // background
+            ctx.beginPath();
+            ctx.fillStyle = "#880088";
+            ctx.fillRect(0, 0, 512, 512);
+
+            dimensionCountButton.text = dimensionCount + "D";
+
+            dimensionCountButton.hover();
+            dimensionCountButton.render();
+
+            if (dimensionCountButton.clicked && buttonTimer > clickDelay) {
+                buttonTimer = 0;
+                dimensionCount++;
+
+                if (dimensionCount > maxDimensions) {
+                    dimensionCount = 2;
                 }
             }
 
+            backButton.hover();
+            backButton.render();
+
+            if (backButton.clicked) {
+                gameScreen = SCREEN.SETTINGS_TO_TITLE;
+            }
+
+            break;
+        }
+        case SCREEN.SETTINGS_TO_TITLE: {
+            gameScreen = SCREEN.TITLE;
             break;
         }
     }
