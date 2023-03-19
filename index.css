@@ -3,3 +3,9 @@ body {
     color: #ffffff;
     font-family: 'Comic Sans MS', 'Courier New', Courier, monospace;
 }
+
+#explanationText {
+    display: inline-block;
+    vertical-align: top;
+    padding: 1em;
+}
